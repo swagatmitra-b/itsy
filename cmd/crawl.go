@@ -3,19 +3,22 @@ package main
 import (
 	"fmt"
 	"net/url"
-	"github.com/PuerkitoBio/goquery"
 	"os"
+	"scrawl/utils"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 func Crawl(resource string, depth int) (int, int) {
 	success, failed := 0, 0
+	visited := make(map[string]bool)
+	// tree := make(map[string][]string)
 
 	type Page struct {
 		url   string
 		depth int
 	}
 
-	visited := make(map[string]bool)
 	q := []Page{{url: resource, depth: 0}}
 
 	for len(q) > 0 {
@@ -36,6 +39,12 @@ func Crawl(resource string, depth int) (int, int) {
 			continue
 		}
 
+		utils.Wait()
+
+		if doc == nil {
+			continue
+		}
+
 		success += 1
 
 		base, _ := url.Parse(page.url)
@@ -52,8 +61,14 @@ func Crawl(resource string, depth int) (int, int) {
 			absolute := u.String()
 			if !visited[absolute] {
 				q = append(q, Page{url: absolute, depth: page.depth + 1})
+				// tree[page.url] = append(tree[page.url], absolute)
 			}
 		})
 	}
+
+	// if sitetree {
+	// 	fmt.Println("\n=== Site Tree ===")
+	// printTree()
+	// }
 	return success, failed
 }

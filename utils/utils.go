@@ -7,6 +7,7 @@ import (
 	"os"
 	"crypto/sha1"
 	"encoding/hex"
+	"math/rand"
 )
 
 func generateFilename(url string) string {
@@ -53,4 +54,31 @@ func OutputPage(outstring, resource string) {
 		exitWithError("Failed to write to file", err)
 	}
 	fmt.Printf("Output saved to %s\n", fullPath)
+}
+
+func Wait() {
+	minDelay := 700
+	maxDelay := 1500
+	delay := rand.Intn(maxDelay - minDelay) + minDelay
+	time.Sleep(time.Duration(delay) * time.Millisecond)
+}
+
+func ParseSearchTerms(input string) (terms []string, matchAll bool) {
+	input = strings.TrimSpace(input)
+	matchAll = strings.Contains(input, "&")
+	var split []string
+
+	if matchAll {
+		split = strings.Split(input, "&")
+	} else {
+		split = strings.Split(input, ",")
+	}
+
+	for _, term := range split {
+		trimmed := strings.ToLower(strings.TrimSpace(term))
+		if trimmed != "" {
+			terms = append(terms, trimmed)
+		}
+	}
+	return
 }

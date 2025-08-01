@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"scrawl/utils"
 	"strings"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/spf13/cobra"
 )
@@ -16,6 +17,9 @@ var output bool
 var css string
 var depth int
 
+// var sitetree bool
+var wordsearch string
+
 func RootFunc(cmd *cobra.Command, args []string) error {
 	resource := args[0]
 
@@ -23,7 +27,7 @@ func RootFunc(cmd *cobra.Command, args []string) error {
 		success, failed := Crawl(resource, depth)
 		fmt.Println()
 		fmt.Printf("Success: %d, Failed: %d\n", success, failed)
-		fmt.Printf("Total pages: %d", success + failed)
+		fmt.Printf("Total pages: %d", success+failed)
 	} else {
 		processURL(resource)
 	}
@@ -46,10 +50,22 @@ func processURL(resource string) (*goquery.Document, error) {
 		return nil, err
 	}
 	bodyString := string(bodyBytes)
+	bodyLower := strings.ToLower(bodyString)
 
-	if tags == "" && css == "" && !output {
-		fmt.Println(bodyString)
-		return nil, nil
+	if wordsearch != "" {
+		terms, matchAll := utils.ParseSearchTerms(wordsearch)
+
+		found := 0
+		for _, word := range terms {
+			if strings.Contains(bodyLower, " "+word+" ") || strings.Contains(bodyLower, " "+word+".") || strings.Contains(bodyLower, " "+word+",") {
+				found += 1
+			}
+		}
+
+		if (matchAll && found != len(terms)) || (!matchAll && found == 0) {
+			fmt.Println("No matches")
+			return nil, nil
+		}
 	}
 
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(bodyString))
@@ -89,7 +105,7 @@ func processURL(resource string) (*goquery.Document, error) {
 		} else {
 			utils.OutputPage(bodyString, resource)
 		}
-		return nil, nil
+		return doc, nil
 	}
 
 	if output {
