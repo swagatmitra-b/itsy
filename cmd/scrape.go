@@ -16,9 +16,9 @@ var tags string
 var output bool
 var css string
 var depth int
-
-// var sitetree bool
+var internalOnly bool
 var wordsearch string
+var sitetree bool
 
 func RootFunc(cmd *cobra.Command, args []string) error {
 	resource := args[0]
@@ -50,14 +50,13 @@ func processURL(resource string) (*goquery.Document, error) {
 		return nil, err
 	}
 	bodyString := string(bodyBytes)
-	bodyLower := strings.ToLower(bodyString)
 
 	if wordsearch != "" {
 		terms, matchAll := utils.ParseSearchTerms(wordsearch)
 
 		found := 0
 		for _, word := range terms {
-			if strings.Contains(bodyLower, " "+word+" ") || strings.Contains(bodyLower, " "+word+".") || strings.Contains(bodyLower, " "+word+",") {
+			if utils.ContainsWord(bodyString, word) {
 				found += 1
 			}
 		}
