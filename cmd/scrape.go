@@ -12,13 +12,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var tags string
-var output bool
-var css string
-var depth int
-var internalOnly bool
-var wordsearch string
-var sitetree bool
+var (
+	tags         string
+	output       bool
+	css          string
+	depth        int
+	internalOnly bool
+	wordsearch   string
+	sitetree     bool
+)
 
 func RootFunc(cmd *cobra.Command, args []string) error {
 	resource := args[0]
