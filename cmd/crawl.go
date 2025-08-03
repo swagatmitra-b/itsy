@@ -106,6 +106,7 @@ import (
 	"os"
 	"scrawl/utils"
 	"sync"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -115,7 +116,7 @@ type Page struct {
 	depth int
 }
 
-func Crawl(resource string, depth int) (int, int) {
+func Crawl(resource string, depth int) (int, int, time.Duration) {
 	var (
 		success, failed int
 		visited         = make(map[string]bool)
@@ -128,7 +129,7 @@ func Crawl(resource string, depth int) (int, int) {
 	baseURL, err := utils.NormalizeURL(resource)
 	if err != nil {
 		utils.ExitWithError("Failed to normalize URL", err)
-		return 0, 0
+		return 0, 0, 0
 	}
 	resource = baseURL.String()
 	baseDomain := baseURL.Hostname()
@@ -139,6 +140,7 @@ func Crawl(resource string, depth int) (int, int) {
 
 	wg.Add(1)
 	pageChan <- Page{url: resource, depth: 0}
+	start := time.Now()
 
 	for i := 0; i < 10; i++ {
 		go func() {
@@ -231,11 +233,11 @@ func Crawl(resource string, depth int) (int, int) {
 	close(pageChan)
 
 	if sitetree {
-		fmt.Println(tree)
 		printTree(tree, map[string]bool{}, resource, "", 0, depth)
 	}
 
-	return success, failed
+	elapsed := time.Since(start)
+	return success, failed, elapsed
 }
 
 func printTree(tree map[string][]string, visited map[string]bool, node, indent string, currDepth, depth int) {

@@ -26,10 +26,11 @@ func RootFunc(cmd *cobra.Command, args []string) error {
 	resource := args[0]
 
 	if depth > 0 {
-		success, failed := Crawl(resource, depth)
+		success, failed, elapsed := Crawl(resource, depth)
 		fmt.Println()
 		fmt.Printf("Success: %d, Failed: %d\n", success, failed)
-		fmt.Printf("Total pages: %d", success+failed)
+		fmt.Printf("Total pages: %d\n", success+failed)
+		fmt.Println("Time taken (s):", elapsed.Seconds())
 	} else {
 		processURL(resource)
 	}
