@@ -11,6 +11,10 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"image"
+	// "image/color"
+	// "image/draw"
+	"math"
 )
 
 func generateFilename(rawURL string) string {
@@ -136,4 +140,28 @@ func ContainsWord(body, word string) bool {
 
 	re := regexp.MustCompile(pattern)
 	return re.MatchString(bodyLower)
+}
+
+func Resize(src image.Image, newWidth, newHeight int) image.Image {
+	srcBounds := src.Bounds()
+	srcWidth := srcBounds.Dx()
+	srcHeight := srcBounds.Dy()
+
+	dst := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
+
+	scaleX := float64(srcWidth) / float64(newWidth)
+	scaleY := float64(srcHeight) / float64(newHeight)
+
+	for y := 0; y < newHeight; y++ {
+		for x := 0; x < newWidth; x++ {
+			
+			srcX := int(math.Min(float64(x)*scaleX, float64(srcWidth-1)))
+			srcY := int(math.Min(float64(y)*scaleY, float64(srcHeight-1)))
+
+			c := src.At(srcX+srcBounds.Min.X, srcY+srcBounds.Min.Y)
+			dst.Set(x, y, c)
+		}
+	}
+
+	return dst
 }
